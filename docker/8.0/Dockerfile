@@ -53,6 +53,10 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY php.ini /etc/php/8.0/cli/conf.d/99-sail.ini
 RUN chmod +x /usr/local/bin/start-container
 
+RUN git clone https://github.com/einsteinersnet/einsteiners.net.git ./
+RUN php artisan storage:link
+# RUN php artisan key:generate
+
 EXPOSE 8000
 
-ENTRYPOINT ["start-container"]
+CMD ["php", "./artisan", "serve", "--host=0.0.0.0"]

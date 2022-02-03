@@ -44,7 +44,7 @@ jobs:
         with:
           step: start
           token: ${{ secrets.GITHUB_TOKEN }}
-          env: staging
+          env: release
 
      #############################
      # Init deployment variables #

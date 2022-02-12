@@ -1,6 +1,6 @@
 @extends('../template/layout')
 @section('ogmeta')
-    <meta property="og:url" content="<?echo url('/');?>/">
+    <meta property="og:url" content="{{ route('home') }}">
     @if(App::isLocale('ru'))
         <meta property="og:title" content="Einsteiners - Сервис организации мероприятий">
         <meta property="og:description" content="Einsteiners - Сервис организации мероприятий">
@@ -8,7 +8,7 @@
         <meta property="og:title" content="Einsteiners - Event Management Service">
         <meta property="og:description" content="Einsteiners - Event Management Service">
     @endif
-    <meta property="og:image" content="<?echo url('/');?>/images/ogimage.jpg">
+    <meta property="og:image" content="{{ route('home') }}/images/ogimage.jpg">
 @endsection
 @section('header-style')
 
@@ -44,7 +44,7 @@
             <div class="uk-grid uk-grid-small uk-child-width-1-1" data-uk-grid>
                 <div>
                     <div class="uk-grid uk-grid-small uk-flex uk-flex-middle" data-uk-grid>
-                        <div class="uk-icon" data-uk-icon="icon: mail"></div> <div>info@einsteiners.net</div>
+                        <div class="uk-icon" data-uk-icon="icon: mail"></div> <div>info@einsteiners.us</div>
                     </div>
                 </div>
                 <div>
@@ -68,7 +68,7 @@
             <div class="uk-grid uk-grid-small uk-child-width-1-1" data-uk-grid>
                 <div>
                     <div class="uk-grid uk-grid-small uk-flex uk-flex-middle" data-uk-grid>
-                        <div class="uk-icon" data-uk-icon="icon: mail"></div> <div>info@einsteiners.net</div>
+                        <div class="uk-icon" data-uk-icon="icon: mail"></div> <div>info@einsteiners.us</div>
                     </div>
                 </div>
                 <div>

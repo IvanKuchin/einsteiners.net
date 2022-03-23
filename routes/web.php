@@ -7,7 +7,7 @@ use App\Models\Payment;
 use Illuminate\Support\Facades\URL;
 
 URL::forceScheme('https');
-if (env('APP_ENV') === 'dev') {
+if (env('APP_DEV') == 'true') {
     URL::forceScheme('http');
 }
 /*
@@ -63,6 +63,10 @@ if (env('APP_ENV') === 'dev') {
     use App\Http\Controllers\Service\LinkController;
     Route::get('/link', [LinkController::class, 'link'])->name('link');
 // Cashe Clean //
+// Date Format //
+    use App\Http\Controllers\Service\DateController;
+    Route::get('/date-format', [DateController::class, 'date'])->name('date-format');
+// Date Format //
 // Redirect Login //
     Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
         return redirect('/events');

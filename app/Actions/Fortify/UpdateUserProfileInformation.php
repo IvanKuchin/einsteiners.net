@@ -6,24 +6,23 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
+use Illuminate\Support\Facades\App;
+use Carbon\Carbon;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
-    /**
-     * Validate and update the given user's profile information.
-     *
-     * @param  mixed  $user
-     * @param  array  $input
-     * @return void
-     */
     public function update($user, array $input)
-    {
+    {   
+        $input['birth'] = Carbon::createFromFormat($input['format'], $input['birth'])->timestamp;
+        $input['vaccine'] = Carbon::createFromFormat($input['format'], $input['vaccine'])->timestamp;
+
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'birth' => ['required', 'string', 'max:255'],
+            'birth' => ['required', 'after:1945-01-01'],
+            'phone' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'vaccine' => ['required', 'string', 'max:255'],
+            'vaccine' => ['required', 'after:2020-01-01'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
         ])->validateWithBag('updateProfileInformation');
 
@@ -38,6 +37,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->forceFill([
                 'name' => $input['name'],
                 'email' => $input['email'],
+                'phone' => $input['phone'],
                 'vaccine' => $input['vaccine'],
                 'last_name' => $input['last_name'],
                 'birth' => $input['birth'],
@@ -57,6 +57,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         $user->forceFill([
             'name' => $input['name'],
             'email' => $input['email'],
+            'phone' => $input['phone'],
             'vaccine' => $input['vaccine'],
             'last_name' => $input['last_name'],
             'birth' => $input['birth'],

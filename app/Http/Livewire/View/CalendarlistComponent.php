@@ -28,7 +28,7 @@ class CalendarlistComponent extends Component
     use WithPagination;
     use WithFileUploads;
 
-    public $childrenlist, $user, $select_calendars, $calendars, $name, $age, $date_event, $description, $location, $cover_path, $cover_add;
+    public $childrenlist, $user, $select_calendars, $calendars, $name, $age, $date_event, $date_time, $description, $location, $cover_path, $cover_add;
 
     public $personal, $phone, $date, $children, $liability, $screening, $waiver, $release;
 
@@ -45,11 +45,13 @@ class CalendarlistComponent extends Component
     public $closeModal = false;
     public $callbackModal = false;
 
+    public $format = 'd.m.Y';
+    public $format_calendar = '0';
+
     public function render()
     {
         $user = Auth::user();
-        $this->now = date_format(new DateTime('now'),"Y-m-d");
-        //dd($user);
+        $this->now = date_format(new DateTime('now'),"d-m-Y");
 
         if (isset($user)) {
             if($user['role_id'] == '3') {
@@ -66,22 +68,24 @@ class CalendarlistComponent extends Component
             $this->childrenlist = Children::where('user_id', $user->id)->get();
         }
 
-        //$this->calendars = Calendar::all();
-        $this->calendars = Calendar::all()->sortBy('date_event'); //sortByDesc
-        //$this->calendars = Calendar::where('active', '1')->get()->take(20);
-        //$this->calendars = Calendar::where('active', '1')->get();
+        $this->calendars = Calendar::all()->sortBy('date_event');
         return view('livewire.calendar.list');
     }
 
     public function store()
     {
+        $date_after = Carbon::today()->format('Y-m-d');
+        $date_before = Carbon::today()->addDays(60)->format('Y-m-d');
+        
+        $this->date_event = Carbon::createFromFormat($this->format, $this->date_event)->timestamp;
+        
         $user = Auth::user();
         $this->validate([
             'name' => 'required|min:1',
             'cover_add' => 'required|image|max:1024',
             'age' => 'required|min:1',
             'location' => 'required|min:1',
-            'date_event' => 'required',
+            'date_event' => 'required|after:1945-01-01',
             'description' => 'required|min:1',
         ]);
 
@@ -89,6 +93,7 @@ class CalendarlistComponent extends Component
             'name' => $this->name,
             'cover_path' => $this->cover_add->store('upload/calendar', 'public'),
             'date_event' => $this->date_event,
+            'date_time' => $this->date_time,
             'age' => $this->age,
             'location' => $this->location,
             'description' => $this->description,
@@ -149,6 +154,11 @@ class CalendarlistComponent extends Component
 
     public function update()
     {    
+        $date_after = Carbon::today()->format('Y-m-d');
+        $date_before = Carbon::today()->addDays(60)->format('Y-m-d');
+
+        $this->date_event = Carbon::createFromFormat($this->format, $this->date_event)->timestamp;
+        
         if ($this->upgradeUpload) {
             $this->validate([
                 'selected_id' => 'required|numeric',
@@ -156,7 +166,7 @@ class CalendarlistComponent extends Component
                 'cover_path' => 'required|image|max:1024',
                 'age' => 'required|min:1',
                 'location' => 'required|min:5',
-                'date_event' => 'required', /*date_format:d.m.Y H:i 12.12.1212 12:00*/
+                'date_event' => 'required|after:1945-01-01',
                 'description' => 'required|min:1',
             ]);
             if ($this->selected_id) {
@@ -166,6 +176,7 @@ class CalendarlistComponent extends Component
                     'name' => $this->name,
                     'cover_path' => $this->cover_path->store('upload/event', 'public'),
                     'date_event' => $this->date_event,
+                    'date_time' => $this->date_time,
                     'age' => $this->age,
                     'location' => $this->location,
                     'description' => $this->description,
@@ -188,7 +199,7 @@ class CalendarlistComponent extends Component
                 //'cover_path' => 'required|image|max:1024',
                 'age' => 'required|min:1',
                 'location' => 'required|min:5',
-                'date_event' => 'required', /*date_format:d.m.Y H:i 12.12.1212 12:00*/
+                'date_event' => 'required|after:1945-01-01',
                 'description' => 'required|min:1',
             ]);
             if ($this->selected_id) {
@@ -196,8 +207,8 @@ class CalendarlistComponent extends Component
                 $calendars->update([
                     'id' => $this->selected_id,
                     'name' => $this->name,
-                    //'cover_path' => $this->cover_path->store('upload', 'public'),
                     'date_event' => $this->date_event,
+                    'date_time' => $this->date_time,
                     'age' => $this->age,
                     'location' => $this->location,
                     'description' => $this->description,
@@ -224,7 +235,6 @@ class CalendarlistComponent extends Component
             $image = DB::table('calendars')->where('id', $id)->first();
             $this->confirmEvent = false;
             sleep(1);
-            //Storage::disk('public')->delete($image->cover_path);
             $calendars->delete();
         }
 
@@ -242,8 +252,10 @@ class CalendarlistComponent extends Component
         $this->age = null;
         $this->location = null;
         $this->date_event = null;
+        $this->date_time = null;
         $this->description = null;
         $this->selected_id = null;
+        $this->format = 'd.m.Y';
     }
 
     public function create()
@@ -265,6 +277,7 @@ class CalendarlistComponent extends Component
         $this->age = $calendars->age;
         $this->location = $calendars->location;
         $this->date_event = $calendars->date_event;
+        $this->date_time = $calendars->date_time;
         $this->description = $calendars->description;
         $this->resetValidation();
     }

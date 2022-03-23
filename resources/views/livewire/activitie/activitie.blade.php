@@ -159,7 +159,7 @@
                                     <h4 class="uk-text-center">{{ __('LanDateLocation') }}</h4>
                                 <hr />
                             </div>
-                                <div class="uk-grid-margin uk-first-column">
+                                <div class="uk-grid-margin uk-first-column uk-width-1-2">
                                     <div class="uk-line-input">
                                         <label><i>*</i> {{ __('lanEventDate') }}</label>
                                         @error('date_event')
@@ -168,13 +168,22 @@
                                                 {{ $message }}
                                             </div>
                                         @enderror
-                                        @php
-                                            $datelocal = new DateTime($date_event);
-                                        @endphp
-                                        {{--
-                                        <input type="datetime-local" wire:model.defer="date_event" placeholder="@php echo date_format($datelocal,"d.m.Y H:i") @endphp" class="uk-input">
-                                        --}}
-                                        <input type="text" wire:model.defer="date_event" onFocus="maskPhone.call(this);" placeholder="__.__.__ __:__" class="uk-input">
+
+                                        @php $this->date_event = \Carbon\Carbon::createFromTimestamp($this->date_event)->format($this->format); @endphp
+
+                                        <input class="uk-input datepicker-here" wire:model.defer="date_event" type="text" onClick="xCal(this,'.', {{ $this->format_calendar }})" onKeyUp="xCal()" oninput="xCal()" pattern="[0-9]{2}\.[0-9]{2}\.[0-9]{4}" onFocus="maskPhone.call(this);" placeholder="__.__.____"/>
+                                    </div>
+                                </div>
+                                <div class="uk-grid-margin uk-first-column uk-width-1-2">
+                                    <div class="uk-line-input">
+                                        <label><i>*</i> {{ __('Time') }}</label>
+                                        @error('date_time')
+                                            <div class="uk-alert-danger" data-uk-alert>
+                                                <a class="uk-alert-close" data-uk-close></a>
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                        <input type="text" wire:model.defer="date_time" class="uk-input" onFocus="maskPhone.call(this);" placeholder="__:__">
                                     </div>
                                 </div>
                                 <div class="uk-grid-margin uk-first-column">
@@ -263,9 +272,6 @@
                 </form>
             </div>
         </div>
-        {{--
-        @include('livewire.event.edit')
-        --}}
     @else
         @if ($createMode)
         <div id="crevent" class="uk-modal uk-modal-event uk-flex-top uk-open" style="display: flex" data-uk-modal>
@@ -361,22 +367,36 @@
                                     <h4 class="uk-text-center">{{ __('LanDateLocation') }}</h4>
                                 <hr />
                             </div>
-                                <div class="uk-grid-margin uk-first-column">
+
+                                <div class="uk-grid-margin uk-first-column uk-width-1-2">
                                     <div class="uk-line-input">
-                                        <label><i>*</i> {{ __('lanEventDate') }}</label>
+                                        <label>
+                                            <i>*</i> {{ __('lanEventDate') }}
+                                        </label>
                                         @error('date_event')
                                             <div class="uk-alert-danger" data-uk-alert>
                                                 <a class="uk-alert-close" data-uk-close></a>
                                                 {{ $message }}
                                             </div>
                                         @enderror
-                                        {{--
-                                        <input type="datetime-local" wire:model.defer="date_event" class="uk-input">
-                                        --}}
-                                        <input type="text" wire:model.defer="date_event" onFocus="maskPhone.call(this);" placeholder="__.__.__ __:__" class="uk-input">
 
+                                        <input class="uk-input datepicker-here" wire:model.defer="date_event" type="text" onClick="xCal(this,'.', {{ $this->format_calendar }})" onKeyUp="xCal()" oninput="xCal()" pattern="[0-9]{2}\.[0-9]{2}\.[0-9]{4}" onFocus="maskPhone.call(this);" placeholder="__.__.____"/>
                                     </div>
                                 </div>
+
+                                <div class="uk-grid-margin uk-first-column uk-width-1-2">
+                                    <div class="uk-line-input">
+                                        <label><i>*</i> {{ __('Time') }}</label>
+                                        @error('date_time')
+                                            <div class="uk-alert-danger" data-uk-alert>
+                                                <a class="uk-alert-close" data-uk-close></a>
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                        <input type="text" wire:model.defer="date_time" class="uk-input" onFocus="maskPhone.call(this);" placeholder="__:__">
+                                    </div>
+                                </div>
+
                                 <div class="uk-grid-margin uk-first-column">
                                     <div class="uk-line-input">
                                         <label><i>*</i> {{ __('LanCountry') }}</label>
@@ -526,9 +546,6 @@
             </div>
         </div>
         @endif
-        {{--
-        @include('livewire.event.create')
-        --}}
     @endif
 
     @if(count($activities) == 0)
@@ -549,9 +566,6 @@
 
     <div class="uk-grid uk-grid-small uk-child-width-1-1@m" data-uk-grid>
         @foreach ($activities as $activitie)
-        @php
-            $date = new DateTime($activitie->date_event);
-        @endphp
         <div id="element-{{ $activitie->id }}" @if($activitie->active == 0) class="uk-deactive" @endif>
             <div class="uk-panel">
                 <div class="uk-loading" wire:loading.flex wire:target="delete({{ $activitie->id }})">
@@ -566,9 +580,9 @@
                         @endif
                     </div>
                 @endif
-                @if($activitie->date_event > date('Y-m-d H:i:s'))
+                @if($activitie->date_event > \Carbon\Carbon::now()->timestamp)
                     <div class="uk-panel-time" wire:ignore>
-                        <div class="uk-grid uk-grid-small uk-child-width-auto" data-uk-grid data-uk-countdown="date: @php echo date_format($date,"Y-m-d") . "T" . date_format($date,"h:m:s"); @endphp">
+                        <div class="uk-grid uk-grid-small uk-child-width-auto" data-uk-grid data-uk-countdown="date: @php echo \Carbon\Carbon::createFromTimestamp($activitie['date_event'])->format('Y-m-d'). "T" . $activitie['date_time']; @endphp">
                             <div>
                                 <div class="uk-countdown-number uk-countdown-days"></div>
                                 <div class="uk-countdown-label uk-margin-small uk-text-center">{{ __('LanDays') }}</div>
@@ -665,8 +679,8 @@
                             </div>
                         </div>
                         <div class="uk-width-auto@m">
-                            <div class="uk-date @if($activitie->date_event < date('Y-m-d H:i:s')) uk-passed @endif uk-flex uk-flex-middle" data-uk-tooltip="title: {{ __('lanEventDate') }}; pos: bottom">
-                                <span data-uk-icon="icon: calendar"></span> <span>@php echo date_format($date,"j.m.Y"); @endphp</span>
+                            <div class="uk-date @if($activitie->date_event < \Carbon\Carbon::now()->timestamp) uk-passed @endif uk-flex uk-flex-middle">
+                                <span data-uk-icon="icon: calendar" wire:ignore></span> <span>@php echo \Carbon\Carbon::createFromTimestamp($activitie['date_event'])->format($this->format); @endphp</span>
                             </div>
                         </div>
                     </div>
@@ -676,4 +690,16 @@
         </div>
         @endforeach
     </div>
+
+    <script>
+        document.addEventListener('livewire:load', function () {
+            @this.format = LocaleFormat();
+            if(LocaleFormat() == 'm.d.Y') {
+                @this.format_calendar = 2;
+            } else {
+                @this.format_calendar = 0;
+            }
+        });
+    </script>
+
 </div>

@@ -115,7 +115,7 @@
                                 </div>
                             </div>
                             @enderror
-                            <div class="uk-grid-margin uk-first-column">
+                            <div class="uk-grid-margin uk-first-column uk-width-1-2">
                                 <div class="uk-line-input">
                                     <label><i>*</i> {{ __('lanEventDate') }}</label>
                                     @error('date_event')
@@ -124,10 +124,23 @@
                                             {{ $message }}
                                         </div>
                                     @enderror
-                                    {{--
-                                    <input type="datetime-local" wire:model.defer="date_event" class="uk-input">
-                                    --}}
-                                    <input type="text" wire:model.defer="date_event" onFocus="maskPhone.call(this);" placeholder="__.__.__ __:__" class="uk-input">
+
+                                    @php $this->date_event = \Carbon\Carbon::createFromTimestamp($this->date_event)->format($this->format); @endphp
+
+                                    <input class="uk-input datepicker-here" wire:model.defer="date_event" type="text" onClick="xCal(this,'.', {{ $this->format_calendar }})" onKeyUp="xCal()" oninput="xCal()" pattern="[0-9]{2}\.[0-9]{2}\.[0-9]{4}" onFocus="maskPhone.call(this);" placeholder="__.__.____"/>
+
+                                </div>
+                            </div>
+                            <div class="uk-grid-margin uk-first-column uk-width-1-2">
+                                <div class="uk-line-input">
+                                    <label><i>*</i> {{ __('Time') }}</label>
+                                    @error('date_time')
+                                        <div class="uk-alert-danger" data-uk-alert>
+                                            <a class="uk-alert-close" data-uk-close></a>
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                    <input type="text" wire:model.defer="date_time" class="uk-input" onFocus="maskPhone.call(this);" placeholder="__:__">
                                 </div>
                             </div>
                             <div class="uk-grid-margin uk-first-column">
@@ -176,9 +189,6 @@
                 </form>
             </div>
         </div>
-        {{--
-        @include('livewire.event.edit')
-        --}}
     @else
         @if ($createMode)
         <div id="crevent" class="uk-modal uk-modal-event uk-flex-top uk-open" style="display: flex" data-uk-modal>
@@ -228,19 +238,33 @@
                                 </div>
                             </div>
                             @enderror
-                            <div class="uk-grid-margin uk-first-column">
+                            
+                            <div class="uk-grid-margin uk-first-column uk-width-1-2">
                                 <div class="uk-line-input">
-                                    <label><i>*</i> {{ __('lanEventDate') }}</label>
+                                    <label>
+                                        <i>*</i> {{ __('lanEventDate') }}
+                                    </label>
                                     @error('date_event')
                                         <div class="uk-alert-danger" data-uk-alert>
                                             <a class="uk-alert-close" data-uk-close></a>
                                             {{ $message }}
                                         </div>
                                     @enderror
-                                    {{--
-                                    <input type="datetime-local" wire:model.defer="date_event" class="uk-input">
-                                    --}}
-                                    <input type="text" wire:model.defer="date_event" onFocus="maskPhone.call(this);" placeholder="__.__.__ __:__" class="uk-input">
+
+                                    <input class="uk-input datepicker-here" wire:model.defer="date_event" type="text" onClick="xCal(this,'.', {{ $this->format_calendar }})" onKeyUp="xCal()" oninput="xCal()" pattern="[0-9]{2}\.[0-9]{2}\.[0-9]{4}" onFocus="maskPhone.call(this);" placeholder="__.__.____"/>
+                                </div>
+                            </div>
+
+                            <div class="uk-grid-margin uk-first-column uk-width-1-2">
+                                <div class="uk-line-input">
+                                    <label><i>*</i> {{ __('Time') }}</label>
+                                    @error('date_time')
+                                        <div class="uk-alert-danger" data-uk-alert>
+                                            <a class="uk-alert-close" data-uk-close></a>
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                    <input type="text" wire:model.defer="date_time" class="uk-input" onFocus="maskPhone.call(this);" placeholder="__:__">
                                 </div>
                             </div>
 
@@ -291,32 +315,25 @@
             </div>
         </div>
         @endif
-        {{--
-        @include('livewire.event.create')
-        --}}
     @endif
 
     @if(count($events) == 0)
         <div class="uk-screen-clean uk-flex uk-flex-middle uk-flex-center">
             <div class="uk-text-center">
                 <div>
-                    <span class="uk-icon" data-uk-icon="icon: album; ratio: 2"></span>
+                    <span class="uk-icon" data-uk-icon="icon: album; ratio: 2" wire:ignore></span>
                 </div>
                 <h2>{{ __('lanEventClean') }}</h2>
                 <p>{{ __('lanEventCleanDesk') }}</p>
                 <div class="uk-button-card uk-button">
                     <a href="{{ route('personal-events') }}?create=1">{{ __('LanCreateEvent') }}</a>
                 </div>
-
             </div>
         </div>
     @endif
 
     <div class="uk-grid uk-grid-small uk-child-width-1-1@m" data-uk-grid>
         @foreach ($events as $event)
-        @php
-            $date = new DateTime($event->date_event);
-        @endphp
         <div id="element-{{ $event->id }}" class="@if($event->active == 0) uk-deactive @endif">
             <div class="uk-panel">
                 <div class="uk-loading" wire:loading.flex wire:target="delete({{ $event->id }})">
@@ -326,14 +343,14 @@
                     <div class="uk-image" data-src="{{ route('storage') }}/{{ $event->cover_path }}" data-uk-img>
                         @if($event['reviewed'] > 0)
                             <div class="uk-view uk-flex uk-flex-middle uk-button uk-button-symbol" data-uk-tooltip="title: {{ __('LanRew') }}; pos: bottom">
-                                <span class="uk-icon" data-uk-icon="play-circle"></span> <span>{{ $event->reviewed }}</span>
+                                <span class="uk-icon" data-uk-icon="play-circle" wire:ignore></span> <span>{{ $event->reviewed }}</span>
                             </div>
                         @endif
                     </div>
                 @endif
-                @if($event->date_event > date('Y-m-d H:i:s'))
+                @if($event->date_event > \Carbon\Carbon::now()->timestamp)
                     <div class="uk-panel-time" wire:ignore>
-                        <div class="uk-grid uk-grid-small uk-child-width-auto" data-uk-grid data-uk-countdown="date: @php echo date_format($date,"Y-m-d") . "T" . date_format($date,"h:m:s"); @endphp">
+                        <div class="uk-grid uk-grid-small uk-child-width-auto" data-uk-grid data-uk-countdown="date: @php echo \Carbon\Carbon::createFromTimestamp($event['date_event'])->format('Y-m-d'). "T" . $event['date_time']; @endphp">
                             <div>
                                 <div class="uk-countdown-number uk-countdown-days"></div>
                                 <div class="uk-countdown-label uk-margin-small uk-text-center">{{ __('LanDays') }}</div>
@@ -382,11 +399,11 @@
                                             <div>
                                                 @if($event->active == 0)
                                                     <button class="uk-button uk-button-symbol" wire:click="activeConfirm({{ $event->id }})" data-uk-tooltip="title: {{ __('LanActive') }}; pos: bottom">
-                                                        <span class="uk-icon uk-update" data-uk-icon="icon: check"></span>
+                                                        <span class="uk-icon uk-update" data-uk-icon="icon: check" wire:ignore></span>
                                                     </button>
                                                 @else
                                                     <button class="uk-button uk-button-symbol" wire:click="deactiveConfirm({{ $event->id }})" data-uk-tooltip="title: {{ __('LanDeactive') }}; pos: bottom">
-                                                        <span class="uk-icon uk-update" data-uk-icon="icon: ban"></span>
+                                                        <span class="uk-icon uk-update" data-uk-icon="icon: ban" wire:ignore></span>
                                                     </button>
                                                 @endif
                                             </div>
@@ -409,7 +426,7 @@
                                         <div class="uk-grid uk-grid-collapse uk-flex uk-flex-middle" data-uk-grid>
                                             <div class="uk-width-expand@xs">
                                                 <div class="uk-flex uk-flex-middle">
-                                                    <span class="uk-icon-link" data-uk-icon="icon: link"></span>
+                                                    <span class="uk-icon-link" data-uk-icon="icon: link" wire:ignore></span>
                                                     
                                                     @if($event->active == 0)
                                                         <span class="uk-text-link" id="copy-{{ $event->id }}">{{ __('LanDeactiveAdminMessage') }}</span>
@@ -431,8 +448,8 @@
                             </div>
                         </div>
                         <div class="uk-width-auto@m">
-                            <div class="uk-date @if($event->date_event < date('Y-m-d H:i:s')) uk-passed @endif uk-flex uk-flex-middle" data-uk-tooltip="title: {{ __('lanEventDate') }}; pos: bottom">
-                                <span data-uk-icon="icon: calendar"></span> <span>@php echo date_format($date,"j.m.Y"); @endphp</span>
+                            <div class="uk-date @if($event->date_event < \Carbon\Carbon::now()->timestamp) uk-passed @endif uk-flex uk-flex-middle">
+                                <span data-uk-icon="icon: calendar" wire:ignore></span> <span>@php echo \Carbon\Carbon::createFromTimestamp($event['date_event'])->format($this->format); @endphp</span>
                             </div>
                         </div>
                     </div>
@@ -455,6 +472,17 @@
             </div>
         </div>
         @endforeach
+
+        <script>
+            document.addEventListener('livewire:load', function () {
+                @this.format = LocaleFormat();
+                if(LocaleFormat() == 'm.d.Y') {
+                    @this.format_calendar = 2;
+                } else {
+                    @this.format_calendar = 0;
+                }
+            });
+        </script>
 
         {{ $events->links() }}
     </div>
